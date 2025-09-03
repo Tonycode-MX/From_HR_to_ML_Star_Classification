@@ -18,8 +18,7 @@ This project includes three supervised machine learning models for stellar class
    - Provides feature importance scores, useful for interpretability and feature selection.
    - Robust against noise and effective with heterogeneous astrophysical variables.
 
-3. **Random Forest (RF)**  
-   - Support Vector Machine (SVM)
+3. **Support Vector Machine (SVM)**  
    - Uses hyperplanes in high-dimensional space to separate stellar classes.
    - Well-suited for complex decision boundaries and smaller, imbalanced datasets.
    - Recommended when precision in distinguishing minority classes (e.g., Giants, White Dwarfs) is crucial.
