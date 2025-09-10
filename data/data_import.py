@@ -87,8 +87,8 @@ def gaia_data_import(user: str = "", password: str = ""):
     print("=====  Gaia data import successful!  =====")
     print("==========================================\n")
     print("Imported columns:", list(df.columns))
-    print("Number of rows imported:", len(df))
-    print("Note: All parameters and imported columns can be adjusted in data/data_importing.py")
+    print("\nNumber of rows imported:", len(df))
+    print("\nNote: All parameters and imported columns can be adjusted in data/data_importing.py")
 
 
     return df
