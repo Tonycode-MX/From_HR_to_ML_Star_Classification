@@ -4,6 +4,10 @@ This project was developed for Partial 1 of the Deep Learning course as part of 
 
 The goal is to build an end-to-end supervised ML pipeline for stellar classification: query and preprocess Gaia photometry/astrometry (compute BP–RP color and absolute magnitude M_G), generate labels via physically motivated HR-diagram cuts, perform feature selection (Random Forest importance + RFE), and train three models (KNN, Random Forest, SVM). The pipeline evaluates models with Accuracy, Macro-F1, ROC-AUC (OvR), and confusion matrices, and produces summary visualizations (HR diagram colored by class, feature-importance plots) to support data-driven astrophysical analysis.
 
+**Note on Methodology:**
+
+While the HR diagram provides a direct and physically-grounded method for stellar classification based on derived parameters, this project deliberately employs supervised machine learning models. This approach was chosen not for its practical necessity in this specific case, but as a practical exercise to apply and evaluate machine learning techniques to a dataset of personal interest. The primary goal was to demonstrate proficiency in building an end-to-end ML pipeline, not to develop a novel astrophysical classification tool.
+
 ### Models Used
 
 This project includes three supervised machine learning models for stellar classification, each with different characteristics:
@@ -41,22 +45,41 @@ By evaluating these three models under the same pipeline, the project compares t
 
 ## Configuration: Pipeline Stages Description
 
-### Stage 1: Data Importing, Cleaning, and Preprocessing 
+### Stage 1: Data Importing, Cleaning, and Preprocessing
 
+This stage handles the acquisition and initial preparation of the stellar dataset by:
 
-**Input:** Raw CSV file (e.g., `.csv`)  
-**Output:** 
+1. **Importing Data**  
+   - `Option 1`: Queries the Gaia DR3 archive directly using astroquery. This is the default method.
+   - `Option 2`: Loads a local CSV file from the /data directory.
 
+2. **Imputing Missing Values**  
+   - For each column, any missing values (NaN) are replaced with the mean of that column. This helps preserve the overall statistical properties of the data while preventing errors in subsequent modeling stages.
 
-### Stage 2: 
+3. **Saving Cleaned Data**  
+   - The cleaned data is saved as `cleaned_data.csv` in the catalog directory, ready for the next stages of the pipeline.
+
+**Input:** A direct query to the Gaia DR3 database or raw CSV file (e.g., `dataset.csv`) in the /data folder.
+**Output:** `cleaned_data.csv` in the /data folder.
+
+### Stage 2: Data Classification
+
+This stage is the core of the labeling process. It computes the necessary features from the raw Gaia data and classifies each star based on its position on the Hertzsprung-Russell (HR) diagram. The process involves:
+
+1. **Adding Stellar Indices**  
+   - Computes the color index (`BP-RP`) and the absolute magnitude (`M_G`) for each star. These indices are essential for plotting the HR diagram and classifying stars.
+
+2. **Labeling Stars**  
+   - The pipeline applies specific, physically-motivated cuts on the HR diagram to classify each star as a Main Sequence, Giant, or White Dwarf and assigns this label to a new `Target` column.
+
+3. **Saving Classified Data**  
+   The DataFrame, now including the new color, magnitude, and `Target` columns, is saved as `classified_dataset.csv` in the /data directory.
+
+**Input:** The cleaned CSV file from Stage 1 (`cleaned_data.csv`) in the /data folder.
+**Output:** `classified_dataset.csv` in the /data folder.
 
 
 ### Stage 3: 
-
-
-**Input:** `.csv` (output from Stage 2)  
-**Output:** `.csv` 
-
 
 ### Stage 4: 
 
@@ -91,9 +114,8 @@ conda deactivate
 
 ## File Format for CSV Files
 
-The input CSV file should include the following columns:
+The input CSV file must be formatted as shown below for the model training stage. Note that the `Target` column is optional for the initial data import (Stage 1), as the pipeline can generate it in a later step. However, this column must be present in the final dataset used to train the machine learning models.
 ```
-
 +-----------+-----------+-----------+-----------+-----------+---------+
 | Variable1 | Variable2 | Variable3 |    ...    | VariableK | Target  |
 +-----------+-----------+-----------+-----------+-----------+---------+
@@ -101,14 +123,18 @@ The input CSV file should include the following columns:
 |   1.35    |  -1.20    |   3.25    |    ...    |   1.02    |  Giant  |
 |  -0.10    |  11.05    |  12.80    |    ...    |   1.03    |   WD    |
 +-----------+-----------+-----------+-----------+-----------+---------+
-
-
 ```
 
 ---
+To build the target variable, the dataset must contain the following columns:
 
+* `phot_g_mean_mag`
+* `phot_bp_mean_mag`
+* `phot_rp_mean_mag`
+* `parallax`
+
+**Note:** If your dataset already includes a target column, you should skip the execution of **Stage 2** and proceed directly to **Stage 3**.
 By following this unified format, the data can be easily loaded, cleaned, and processed for analysis in the pipeline.
-
 
 ## Running the Clustering Script
 
