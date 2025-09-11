@@ -47,7 +47,7 @@ def stage1():
     df_cleaned = nans_elimination(df)
 
     # Save the imported DataFrame as CSV in /data
-    save_dataframe(df_cleaned, data_folder, filename="dataset_from_gaia.csv")
+    save_dataframe(df_cleaned, data_folder, filename="cleaned_data.csv")
 
     # Preview
     print("\nImported dataset preview:")
@@ -60,7 +60,7 @@ def stage2():
     """
     # Get data path
     data_folder = data_path()
-    dataset = os.path.join(data_folder, "dataset_from_gaia.csv")
+    dataset = os.path.join(data_folder, "cleaned_data.csv")
     df = pd.read_csv(dataset)
 
     # Add color and magnitude indices
