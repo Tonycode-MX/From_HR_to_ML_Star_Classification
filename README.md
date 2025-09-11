@@ -60,6 +60,7 @@ This stage handles the acquisition and initial preparation of the stellar datase
    - The cleaned data is saved as `cleaned_data.csv` in the catalog directory, ready for the next stages of the pipeline.
 
 **Input:** A direct query to the Gaia DR3 database or raw CSV file (e.g., `dataset.csv`) in the /data folder.
+
 **Output:** `cleaned_data.csv` in the /data folder.
 
 ### Stage 2: Data Classification
@@ -76,8 +77,8 @@ This stage is the core of the labeling process. It computes the necessary featur
    The DataFrame, now including the new color, magnitude, and `Target` columns, is saved as `classified_dataset.csv` in the /data directory.
 
 **Input:** The cleaned CSV file from Stage 1 (`cleaned_data.csv`) in the /data folder.
-**Output:** `classified_dataset.csv` in the /data folder.
 
+**Output:** `classified_dataset.csv` in the /data folder.
 
 ### Stage 3: 
 
@@ -114,7 +115,7 @@ conda deactivate
 
 ## File Format for CSV Files
 
-The input CSV file must be formatted as shown below for the model training stage. Note that the `Target` column is optional for the initial data import (Stage 1), as the pipeline can generate it in a later step. However, this column must be present in the final dataset used to train the machine learning models.
+The input CSV file must be formatted as shown below for the model training stage. Note that the `Target` column is optional for the initial data import (Stage 1), as the pipeline can generate it in **Stage 2**. However, this column must be present in the final dataset used to train the machine learning models.
 ```
 +-----------+-----------+-----------+-----------+-----------+---------+
 | Variable1 | Variable2 | Variable3 |    ...    | VariableK | Target  |
@@ -136,7 +137,7 @@ To build the target variable, the dataset must contain the following columns:
 **Note:** If your dataset already includes a target column, you should skip the execution of **Stage 2** and proceed directly to **Stage 3**.
 By following this unified format, the data can be easily loaded, cleaned, and processed for analysis in the pipeline.
 
-## Running the Clustering Script
+## Running the Main Script
 
 The `modules/` directory contains the main script **`main.py`**, which serves as the primary entry point for executing the analysis process. To run the script, simply use the following command in the terminal (with activated conda environment):  
 
