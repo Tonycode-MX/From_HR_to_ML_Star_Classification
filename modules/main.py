@@ -19,8 +19,9 @@ from modules.module_data_path import data_path, plot_data_path
 from modules.module_data_cleaning import nans_elimination
 from data.data_import import gaia_data_import
 from modules.module_utils import add_color_magnitude_indices, label_star, star_counts, save_dataframe
+from modules.module_models import prepare_data_for_modeling, rf_feature_selection, rfe_feature_selection, compare_feature_selection, compare_model_performance
 
-# Number of stages to execute (1 to )
+# Number of stages to execute (1 to 3)
 stages = [1]
 
 # STAGE 1: Data Import and cleaning
@@ -28,8 +29,8 @@ def stage1():
     """
     Main script to choose how to import the dataset.
     Uncomment the preferred option:
-      1) Import directly from Gaia archive (astroquery)
-      2) Import from local CSV file
+        1) Import directly from Gaia archive (astroquery)
+        2) Import from local CSV file
     """
 
     # Get data path
@@ -49,9 +50,9 @@ def stage1():
     # Save the imported DataFrame as CSV in /data
     save_dataframe(df_cleaned, data_folder, filename="cleaned_data.csv")
 
-    # Preview
-    print("\nImported dataset preview:")
-    print(df_cleaned.head())
+    # Preview (optional)
+    #print("\nImported dataset preview:")
+    #print(df_cleaned.head())
 
 #STAGE 2: Data Classification
 def stage2():
@@ -75,9 +76,41 @@ def stage2():
     # Save the imported DataFrame as CSV in /data
     save_dataframe(df, data_folder, filename="classified_dataset.csv")
 
-    # Preview
-    print("\nClassified dataset preview:")
-    print(df.head())
+    # Preview (optional)
+    #print("\nClassified dataset preview:")
+    #print(df.head())
+
+# STAGE 3: RF & REF-based Modeling
+def stage3():
+    """
+    Main script for feature selection using Random Forest and RFE.
+        1) Prepare data for modeling (feature selection, train-test split, encoding).
+        2) Feature selection with Random Forest.
+        3) Feature selection with RFE.
+        4) Compare feature selection results.
+        5) Comparison of training with all features vs. K features and validation.
+    """
+    # Get data path
+    data_folder = data_path()
+    dataset = os.path.join(data_folder, "classified_dataset.csv")
+    df = pd.read_csv(dataset)
+
+    n_ft = 5  # Number of top features to select
+
+    # Prepare data for modeling
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_data_for_modeling(df)
+
+    # Feature selection with Random Forest
+    topK_rf = rf_feature_selection(X_train, y_train, n_features=n_ft, show_importance=False)  #show_importance=True to print importances
+
+    # Feature selection with RFE
+    topK_rfe = rfe_feature_selection(X_train, y_train, n_features=n_ft)
+
+    # Compare feature selection results (optional)
+    #compare_feature_selection(topK_rf, topK_rfe)
+
+    # Comparison of training with all features vs. K features and validation.
+    compare_model_performance(X_train, y_train, X_val, y_val, X_test, y_test, selected_features=topK_rfe)
 
 
 # Execute stages
@@ -87,3 +120,5 @@ if __name__ == '__main__':
         stage1()
     elif 2 in stages:
         stage2()
+    elif 3 in stages:
+        stage3()
