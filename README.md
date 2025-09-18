@@ -51,17 +51,17 @@ This stage handles the acquisition and initial preparation of the stellar datase
 
 1. **Importing Data**  
    - `Option 1`: Queries the Gaia DR3 archive directly using astroquery. This is the default method.
-   - `Option 2`: Loads a local CSV file from the /data directory.
+   - `Option 2`: Loads a local CSV file from the `/data` directory.
 
 2. **Imputing Missing Values**  
    - For each column, any missing values (NaN) are replaced with the mean of that column. This helps preserve the overall statistical properties of the data while preventing errors in subsequent modeling stages.
 
 3. **Saving Cleaned Data**  
-   - The cleaned data is saved as `cleaned_data.csv` in the catalog directory, ready for the next stages of the pipeline.
+   - The cleaned data is saved as `cleaned_data.csv` in the `/data` directory, ready for the next stages of the pipeline.
 
-**Input:** A direct query to the Gaia DR3 database or raw CSV file (e.g., `dataset.csv`) in the /data folder.
+**Input:** A direct query to the Gaia DR3 database or raw CSV file (e.g., `dataset.csv`) in the `/data` folder.
 
-**Output:** `cleaned_data.csv` in the /data folder.
+**Output:** `cleaned_data.csv` in the `/data` folder.
 
 ### Stage 2: Data Classification
 
@@ -74,13 +74,33 @@ This stage is the core of the labeling process. It computes the necessary featur
    - The pipeline applies specific, physically-motivated cuts on the HR diagram to classify each star as a Main Sequence, Giant, or White Dwarf and assigns this label to a new `Target` column.
 
 3. **Saving Classified Data**  
-   The DataFrame, now including the new color, magnitude, and `Target` columns, is saved as `classified_dataset.csv` in the /data directory.
+   - The DataFrame, now including the new color, magnitude, and `Target` columns, is saved as `classified_dataset.csv` in the `/data` directory.
 
-**Input:** The cleaned CSV file from Stage 1 (`cleaned_data.csv`) in the /data folder.
+**Input:** The cleaned CSV file from Stage 1 (`cleaned_data.csv`) in the `/data` folder.
 
 **Output:** `classified_dataset.csv` in the /data folder.
 
-### Stage 3: 
+### Stage 3: RF & REF-based Modeling
+This stage focuses on feature selection and model training. It prepares the data for modeling, selects the most relevant features using two different methods, and then compares model performance using all variables versus a select subset of variables.
+
+1. **Prepare Data for Modeling**
+
+   - The raw data from the previous stage is processed to separate the target variable (`Target`) from the features. The data is then split into training, validation, and testing sets to ensure robust model evaluation.
+
+2. **Feature Selection with RF & RFE**
+
+   - The pipeline uses two powerful techniques to identify the most important features:
+
+      - Random Forest (RF): A method that assesses the importance of each feature by measuring how much it contributes to the model's predictive power. The top K features are selected based on their importance score.
+
+      - Recursive Feature Elimination (RFE): A method that recursively removes the least important features, trains a model on the remaining ones, and repeats the process until the desired number of top features is reached.
+
+3. **Compare Model Performance**
+   - The final step compares the performance of a model trained on all features against a model trained on the top K features selected by RFE. This validation step is crucial to confirm whether feature selection improves or maintains predictive accuracy while reducing model complexity.
+
+**Input:** The classified CSV file from Stage 2 (`classified_dataset.csv`) in the `/data` folder.
+
+**Output:** No new data file is saved. The output is a trained model and a performance comparison report.
 
 ### Stage 4: 
 
