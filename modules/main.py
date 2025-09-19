@@ -18,11 +18,12 @@ if ROOT not in sys.path:
 from modules.module_data_path import data_path, plot_data_path
 from modules.module_data_cleaning import nans_elimination
 from data.data_import import gaia_data_import
-from modules.module_utils import add_color_magnitude_indices, label_star, star_counts, save_dataframe
-from modules.module_models import prepare_data_for_modeling, rf_feature_selection, rfe_feature_selection, compare_feature_selection, compare_model_performance
+from modules.module_utils import add_color_magnitude_indices, label_star, star_counts, save_dataframe, save_list_to_file, load_list_from_file
+from modules.module_models import prepare_data_for_modeling, rf_feature_selection, rfe_feature_selection, compare_feature_selection
+from modules.module_models import import_models, compute_metrics, compare_in_validation, compare_model_performance
 
-# Number of stages to execute (1 to 3)
-stages = [1]
+# Number of stages to execute (1 to 4)
+stages = [4]
 
 # STAGE 1: Data Import and cleaning
 def stage1():
@@ -112,6 +113,35 @@ def stage3():
     # Comparison of training with all features vs. K features and validation.
     compare_model_performance(X_train, y_train, X_val, y_val, X_test, y_test, selected_features=topK_rfe)
 
+    # Save top K features to pickle files in /data folder
+    save_list_to_file(topK_rfe, data_folder, filename="topK_features_rfe.pkl")
+    save_list_to_file(topK_rf, data_folder, filename="topK_features_rf.pkl")
+
+def stage4():
+    # Get data path
+    data_folder = data_path()
+    dataset = os.path.join(data_folder, "classified_dataset.csv")
+    df = pd.read_csv(dataset)
+
+    #import selected features from previous stage
+    data_folder = data_path()
+    best_features = load_list_from_file(data_folder, filename="topK_features_rfe.pkl")
+
+    dataset = df[best_features + ["target"]]
+
+    # Prepare data for modeling
+    X_train, X_val, X_test, y_train, y_val, y_test = prepare_data_for_modeling(dataset)
+
+    # Select models to compare 
+    # Available models: "KNN", "RandomForest", "SVM", "KNN_OVR", "RF_OVR", "SVM_OVR"
+    models = ["KNN", "RandomForest", "SVM"]
+
+    # Compare in validation
+    best_model = compare_in_validation(import_models(models), X_train, y_train, X_val, y_val, show_classification_report=True)
+
+    # Save best model name to pickle file in /data folder
+    save_list_to_file([best_model], data_folder, filename="best_model_name.pkl")
+    
 
 # Execute stages
 if __name__ == '__main__': 
@@ -122,3 +152,5 @@ if __name__ == '__main__':
         stage2()
     elif 3 in stages:
         stage3()
+    elif 4 in stages:
+        stage4()
