@@ -1,16 +1,45 @@
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import label_binarize, LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import RFE
-from sklearn.metrics import confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.preprocessing import label_binarize
+from sklearn.feature_selection import RFE
+from sklearn.svm import SVC
 import pandas as pd
 import numpy as np
 
+def import_models(model_list=None):
+    """
+    Import and define models to evaluate.
+    Args:
+        list (list): List of model names to include. If None, include all.
+    Returns:
+        models (dict): Dictionary of model name and instance.
 
-def prepare_data_for_modeling(df):
+    Available models:
+        - "KNN": K-Nearest Neighbors
+        - "RandomForest": Random Forest Classifier
+        - "SVM": Support Vector Machine
+        - "KNN_OVR": KNN with One-vs-Rest
+        - "RF_OVR": Random Forest with One-vs-Rest
+        - "SVM_OVR": SVM with One-vs-Rest
+    """
+    avaiable_models = {
+    "KNN": KNeighborsClassifier(n_neighbors=15, weights="distance"),
+    "RandomForest": RandomForestClassifier(n_estimators=500, random_state=42, class_weight="balanced_subsample", n_jobs=-1),
+    "SVM": SVC(kernel="rbf", C=10, gamma="scale", probability=True, random_state=42),
+    "KNN_OVR": OneVsRestClassifier(KNeighborsClassifier(n_neighbors=15, weights="distance"), n_jobs=-1),
+    "RF_OVR": OneVsRestClassifier(RandomForestClassifier(n_estimators=500, random_state=42, class_weight="balanced_subsample", n_jobs=-1), n_jobs=-1),
+    "SVM_OVR": OneVsRestClassifier(SVC(kernel="rbf", C=10, gamma="scale", probability=True, random_state=42), n_jobs=-1)
+    }
+    if model_list is not None:
+        models = {name: model for name, model in avaiable_models.items() if name in model_list}
+    print("\nModels to evaluate:", list(models.keys()))
+    return models
+
+# Prepare data for modeling: feature selection, train-test split, encoding.
+def prepare_data_for_modeling(df, show_info=True):
     """
     Prepare data for modeling: feature selection, train-test split, encoding.
     Args:
@@ -38,14 +67,17 @@ def prepare_data_for_modeling(df):
         X_trainval, y_trainval, test_size=0.2, stratify=y_trainval, random_state=42
     )
 
-    print("\nSizes:")
-    print("Train:", X_train.shape)
-    print("Val:  ", X_val.shape)
-    print("Test: ", X_test.shape)
+    print("\nData prepared and split into train, val, test.")
+
+    if show_info:
+        print("\nSizes:")
+        print("Train:", X_train.shape)
+        print("Val:  ", X_val.shape)
+        print("Test: ", X_test.shape)
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-
+# Run Random Forest to determine feature importances and select top-K features.
 def rf_feature_selection(X_train, y_train, n_features=5, show_importance=True):
     """
     Run Random Forest to determine feature importances and select top-K features.
@@ -70,7 +102,7 @@ def rf_feature_selection(X_train, y_train, n_features=5, show_importance=True):
     print("\nTop-K features:", topK)
     return topK
 
-
+# Run Recursive Feature Elimination (RFE) with Random Forest to select top-K features.
 def rfe_feature_selection(X_train, y_train, n_features=5):
     """
     Run Recursive Feature Elimination (RFE) with Random Forest to select top-K features.
@@ -92,6 +124,7 @@ def rfe_feature_selection(X_train, y_train, n_features=5):
     print("\nRFE selected:", selected_features)
     return selected_features
 
+#compare features selected by RF and RFE
 def compare_feature_selection(topK_rf, topK_rfe):
     """
     Compare features selected by Random Forest and RFE.
@@ -110,7 +143,7 @@ def compare_feature_selection(topK_rf, topK_rfe):
     print(f"Only RF ({len(only_rf)}): {only_rf}")
     print(f"Only RFE ({len(only_rfe)}): {only_rfe}")
 
-
+# Evaluate a classifier with cross-validation and test set.
 def eval_model(clf, X_tr, y_tr, X_te, y_te):
     """
     Evaluate a classifier with cross-validation and test set.
@@ -171,14 +204,70 @@ def compare_model_performance(X_train, y_train, X_val, y_val, X_test, y_test, se
     metrics_sel_val = eval_model(rf_final, X_train_sel, y_train, X_val_sel, y_val)
 
 
-    print("\n=== Resultados RF (todas) ===")
+    print("\n=== RF Results (all) ===")
     print(f"CV Acc: {metrics_all[0]:.3f} | CV Macro-F1: {metrics_all[1]:.3f} | Test Acc: {metrics_all[2]:.3f} | Test Macro-F1: {metrics_all[3]:.3f} | Test ROC-AUC: {metrics_all[4]:.3f}")
-    print("Matriz de confusión (test):\n", metrics_all[5])
+    print("Confusion matrix (test):\n", metrics_all[5])
 
-    print("\n=== Resultados RF (RFE) ===")
+    print("\n=== RF Results (RFE) ===")
     print(f"CV Acc: {metrics_sel[0]:.3f} | CV Macro-F1: {metrics_sel[1]:.3f} | Test Acc: {metrics_sel[2]:.3f} | Test Macro-F1: {metrics_sel[3]:.3f} | Test ROC-AUC: {metrics_sel[4]:.3f}")
-    print("Matriz de confusión (test):\n", metrics_sel[5])
+    print("Confusion matrix (test):\n", metrics_sel[5])
 
-    print("\n=== Resultados RF (RFE) Validación ===")
+    print("\n=== RF Results (RFE) Validation ===")
     print(f"CV Acc: {metrics_sel_val[0]:.3f} | CV Macro-F1: {metrics_sel_val[1]:.3f} | Test Acc: {metrics_sel_val[2]:.3f} | Test Macro-F1: {metrics_sel_val[3]:.3f} | Test ROC-AUC: {metrics_sel_val[4]:.3f}")
-    print("Matriz de confusión (test):\n", metrics_sel_val[5])
+    print("Confusion matrix (test):\n", metrics_sel_val[5])
+
+def compute_metrics(clf, X_tr, y_tr, X_ev, y_ev, class_names):
+    clf.fit(X_tr, y_tr)
+    y_pred = clf.predict(X_ev)
+    acc = accuracy_score(y_ev, y_pred)
+    f1  = f1_score(y_ev, y_pred, average="macro")
+
+    auc = np.nan
+    if hasattr(clf, "predict_proba"):
+        proba = clf.predict_proba(X_ev)
+        classes_present = np.unique(y_ev)
+
+        if len(classes_present) == 1:
+            auc = np.nan  # AUC it's not defined with one class
+        elif len(classes_present) == 2:
+            #Binary AUC: use only the probability of the positive class
+            pos_class = classes_present[1]
+            pos_idx = list(clf.classes_).index(pos_class)
+            y_true_bin = (y_ev == pos_class).astype(int)
+            auc = roc_auc_score(y_true_bin, proba[:, pos_idx])
+        else:
+            # Overall multi-class AUC
+            y_bin = label_binarize(y_ev, classes=clf.classes_)
+            auc = roc_auc_score(y_bin, proba, average="macro", multi_class="ovr")
+
+    cm = confusion_matrix(y_ev, y_pred)
+
+    #Convert class_names to strings
+    string_class_names = [str(name) for name in class_names]
+
+    report = classification_report(y_ev, y_pred, target_names=string_class_names, zero_division=0)
+    return acc, f1, auc, cm, report
+
+def compare_in_validation(models, X_train, y_train, X_val, y_val, show_classification_report=True):
+    val_rows = []
+    val_details = {}  # to store confusion matrices and reports
+    le = LabelEncoder()
+    le.fit(y_train)
+
+    for name, clf in models.items():
+        acc, f1, auc, cm, rep = compute_metrics(clf, X_train, y_train, X_val, y_val, le.classes_)
+        val_rows.append({"Model": name, "Val_Accuracy": acc, "Val_MacroF1": f1, "Val_ROC_AUC": auc})
+        val_details[name] = {"cm": cm, "report": rep}
+
+    df_val = pd.DataFrame(val_rows).sort_values("Val_MacroF1", ascending=False)
+    print("\n=== Validation results ===")
+    print(df_val)
+
+    best_model_name = df_val.iloc[0]["Model"]
+    best_model = models[best_model_name]
+    print(f"\nSelected best model on validation: {best_model_name}")
+    print("\nConfusion matrix (VAL):\n", val_details[best_model_name]["cm"])
+    if show_classification_report:
+        print("\nClassification report (VAL):\n", val_details[best_model_name]["report"])
+
+    return best_model_name
