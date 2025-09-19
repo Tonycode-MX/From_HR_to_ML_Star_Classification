@@ -3,6 +3,8 @@
 /plots/*.pdf
 /data/*.csv
 /data/*.xlsx
+/data/*.pkl
+/data/*.txt
 /environment/*.txt
 /catalog/*.csv
 /modules/__pycache__
