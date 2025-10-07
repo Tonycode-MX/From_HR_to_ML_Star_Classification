@@ -30,7 +30,7 @@ def gaia_data_import(user: str = "", password: str = ""):
 
     job = Gaia.launch_job_async("""
     -- GIANTS
-    SELECT TOP 15
+    SELECT TOP 1500
     ra, dec, parallax, parallax_error,
     phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag,
     ruwe, phot_bp_rp_excess_factor, phot_g_mean_flux,
@@ -45,7 +45,7 @@ def gaia_data_import(user: str = "", password: str = ""):
     UNION ALL
 
     -- WDs
-    SELECT TOP 15
+    SELECT TOP 1500
     ra, dec, parallax, parallax_error,
     phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag,
     ruwe, phot_bp_rp_excess_factor, phot_g_mean_flux,
@@ -60,7 +60,7 @@ def gaia_data_import(user: str = "", password: str = ""):
     UNION ALL
 
     -- MS
-    SELECT TOP 15
+    SELECT TOP 1500
     ra, dec, parallax, parallax_error,
     phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag,
     ruwe, phot_bp_rp_excess_factor, phot_g_mean_flux,
