@@ -100,7 +100,12 @@ This stage focuses on feature selection and model training. It prepares the data
 
 **Input:** The classified CSV file from Stage 2 (`classified_dataset.csv`) in the `/data` folder.
 
-**Output:** No new data file is saved. The output is a trained model and a performance comparison report.
+**Output:** The following essential files are saved to the /data folder:
+
+   - Six CSV files containing the split datasets: $\text{`X_train.csv`}$, $\text{`X_val.csv`}$, $\text{`X_test.csv`}$ (Features) and $\text{`y_train.csv`}$, $\text{`y_val.csv`}$, $\text{`y_test.csv`}$ (Target).
+   - Two PKL files storing the list of selected feature names for column filtering in subsequent stages: $\text{`topK_features_rfe.pkl`}$ and $\text{`topK_features_rf.pkl`}$.
+
+
 
 ### Stage 4: 
 
