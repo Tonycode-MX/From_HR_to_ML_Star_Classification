@@ -20,10 +20,10 @@ from modules.module_data_cleaning import nans_elimination
 from data.data_import import gaia_data_import
 from modules.module_utils import add_color_magnitude_indices, label_star, star_counts, save_dataframe, save_list_to_file, load_list_from_file
 from modules.module_models import prepare_data_for_modeling, rf_feature_selection, rfe_feature_selection, compare_feature_selection
-from modules.module_models import import_models, compute_metrics, compare_in_validation, compare_model_performance
+from modules.module_models import import_models, compute_metrics, compare_in_validation, compare_model_performance, retrain_best_model
 
-# Number of stages to execute (1 to 4)
-stages = [4]
+# Number of stages to execute (1 to 5)
+stages = [1]  # Change this list to execute different stages
 
 # STAGE 1: Data Import and cleaning
 def stage1():
@@ -101,6 +101,14 @@ def stage3():
     # Prepare data for modeling
     X_train, X_val, X_test, y_train, y_val, y_test = prepare_data_for_modeling(df)
 
+    # Save datasets in /data folder
+    save_dataframe(X_train, data_folder, filename="X_train.csv")
+    save_dataframe(X_val, data_folder, filename="X_val.csv")
+    save_dataframe(X_test, data_folder, filename="X_test.csv")
+    save_dataframe(y_train, data_folder, filename="y_train.csv")
+    save_dataframe(y_val, data_folder, filename="y_val.csv")
+    save_dataframe(y_test, data_folder, filename="y_test.csv")
+
     # Feature selection with Random Forest
     topK_rf = rf_feature_selection(X_train, y_train, n_features=n_ft, show_importance=False)  #show_importance=True to print importances
 
@@ -120,17 +128,15 @@ def stage3():
 def stage4():
     # Get data path
     data_folder = data_path()
-    dataset = os.path.join(data_folder, "classified_dataset.csv")
-    df = pd.read_csv(dataset)
 
     #import selected features from previous stage
-    data_folder = data_path()
-    best_features = load_list_from_file(data_folder, filename="topK_features_rfe.pkl")
-
-    dataset = df[best_features + ["target"]]
+    best_features = load_list_from_file(data_folder, filename="topK_features_rfe.pkl")    
 
     # Prepare data for modeling
-    X_train, X_val, X_test, y_train, y_val, y_test = prepare_data_for_modeling(dataset)
+    X_train = pd.read_csv(os.path.join(data_folder, "X_train.csv"), usecols=best_features)
+    X_val   = pd.read_csv(os.path.join(data_folder, "X_val.csv"), usecols=best_features)
+    y_train = pd.read_csv(os.path.join(data_folder, "y_train.csv")).squeeze()
+    y_val   = pd.read_csv(os.path.join(data_folder, "y_val.csv")).squeeze()
 
     # Select models to compare 
     # Available models: "KNN", "RandomForest", "SVM", "KNN_OVR", "RF_OVR", "SVM_OVR"
@@ -141,11 +147,33 @@ def stage4():
 
     # Save best model name to pickle file in /data folder
     save_list_to_file([best_model], data_folder, filename="best_model_name.pkl")
+
+def stage5():
+    # Get data path
+    data_folder = data_path()
+
+    #import selected features from previous stage
+    best_features = load_list_from_file(data_folder, filename="topK_features_rfe.pkl")
+
+    # Prepare data for modeling
+    X_train = pd.read_csv(os.path.join(data_folder, "X_train.csv"), usecols=best_features)
+    X_val   = pd.read_csv(os.path.join(data_folder, "X_val.csv"), usecols=best_features)
+    X_test  = pd.read_csv(os.path.join(data_folder, "X_test.csv"), usecols=best_features)
+
+    y_train = pd.read_csv(os.path.join(data_folder, "y_train.csv")).squeeze()
+    y_val   = pd.read_csv(os.path.join(data_folder, "y_val.csv")).squeeze()
+    y_test  = pd.read_csv(os.path.join(data_folder, "y_test.csv")).squeeze()
+
+    # Import best model name from previous stage
+    best_model_name = load_list_from_file(data_folder, filename="best_model_name.pkl")[0]
+
+    # Retrain best model on train+val set
+    retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_model_name)
+
     
 
 # Execute stages
 if __name__ == '__main__': 
-    
     if 1 in stages:
         stage1()
     elif 2 in stages:
@@ -154,3 +182,5 @@ if __name__ == '__main__':
         stage3()
     elif 4 in stages:
         stage4()
+    elif 5 in stages:
+        stage5()
