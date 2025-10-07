@@ -67,6 +67,17 @@ def prepare_data_for_modeling(df, show_info=True):
         X_trainval, y_trainval, test_size=0.2, stratify=y_trainval, random_state=42
     )
 
+    # 1. Convert Feature arrays (X) to pandas DataFrames
+    X_train_df = pd.DataFrame(X_train)
+    X_val_df = pd.DataFrame(X_val)
+    X_test_df = pd.DataFrame(X_test)
+
+    # 2. Convert Target arrays (y) to pandas Series (or DataFrame)
+    #    A Series is standard for a single target column.
+    y_train_series = pd.Series(y_train)
+    y_val_series = pd.Series(y_val)
+    y_test_series = pd.Series(y_test)
+
     print("\nData prepared and split into train, val, test.")
 
     if show_info:
@@ -75,7 +86,7 @@ def prepare_data_for_modeling(df, show_info=True):
         print("Val:  ", X_val.shape)
         print("Test: ", X_test.shape)
 
-    return X_train, X_val, X_test, y_train, y_val, y_test
+    return X_train_df, X_val_df, X_test_df, y_train_series, y_val_series, y_test_series
 
 # Run Random Forest to determine feature importances and select top-K features.
 def rf_feature_selection(X_train, y_train, n_features=5, show_importance=True):
@@ -271,3 +282,25 @@ def compare_in_validation(models, X_train, y_train, X_val, y_val, show_classific
         print("\nClassification report (VAL):\n", val_details[best_model_name]["report"])
 
     return best_model_name
+
+def retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_model_name):
+    le = LabelEncoder()
+    le.fit(y_train)
+
+    best_model = import_models([best_model_name])
+    best_model = best_model[best_model_name]
+
+    X_trfin = np.vstack([X_train, X_val])
+    y_trfin = np.hstack([y_train, y_val])
+
+    test_acc, test_f1, test_auc, test_cm, test_rep = compute_metrics(
+        best_model, X_trfin, y_trfin, X_test, y_test, le.classes_
+    )
+
+    print("\n=== Test results (best model) ===")
+    print(f"Model: {best_model_name}")
+    print(f"Test Accuracy:  {test_acc:.3f}")
+    print(f"Test Macro-F1:  {test_f1:.3f}")
+    print(f"Test ROC-AUC:   {test_auc:.3f}" if not np.isnan(test_auc) else "Test ROC-AUC:   NA")
+    print("\nConfusion matrix (TEST):\n", test_cm)
+    print("\nClassification report (TEST):\n", test_rep)
