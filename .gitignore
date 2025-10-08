@@ -5,6 +5,7 @@
 /data/*.xlsx
 /data/*.pkl
 /data/*.txt
+/data/*.joblib
 /environment/*.txt
 /catalog/*.csv
 /modules/__pycache__
