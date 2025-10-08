@@ -20,7 +20,7 @@ from modules.module_data_cleaning import nans_elimination
 from data.data_import import gaia_data_import
 from modules.module_utils import add_color_magnitude_indices, label_star, star_counts, save_dataframe, save_list_to_file, load_list_from_file
 from modules.module_models import prepare_data_for_modeling, rf_feature_selection, rfe_feature_selection, compare_feature_selection
-from modules.module_models import import_models, compute_metrics, compare_in_validation, compare_model_performance, retrain_best_model
+from modules.module_models import import_models, compute_metrics, compare_in_validation, compare_model_performance, retrain_best_model, save_model
 
 # Number of stages to execute (1 to 5)
 stages = [1]  # Change this list to execute different stages
@@ -168,9 +168,10 @@ def stage5():
     best_model_name = load_list_from_file(data_folder, filename="best_model_name.pkl")[0]
 
     # Retrain best model on train+val set
-    retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_model_name)
+    final_model = retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_model_name)
 
-    
+    # Save final model to /data folder
+    save_model(final_model, data_folder, filename= f"{best_model_name}_" + "final_model.joblib")
 
 # Execute stages
 if __name__ == '__main__': 
