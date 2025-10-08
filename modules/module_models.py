@@ -8,6 +8,8 @@ from sklearn.feature_selection import RFE
 from sklearn.svm import SVC
 import pandas as pd
 import numpy as np
+import joblib
+import os
 
 def import_models(model_list=None):
     """
@@ -105,7 +107,7 @@ def rf_feature_selection(X_train, y_train, n_features=5, show_importance=True):
 
     importances = pd.Series(rf_base.feature_importances_, index=X_train.columns).sort_values(ascending=False)
     if show_importance:
-        print("\nImportancia (RF):", importances)
+        print("\nImportance (RF):", importances)
 
     # K = number of top features to select
     K = min(n_features, X_train.shape[1])
@@ -257,7 +259,7 @@ def compute_metrics(clf, X_tr, y_tr, X_ev, y_ev, class_names):
     string_class_names = [str(name) for name in class_names]
 
     report = classification_report(y_ev, y_pred, target_names=string_class_names, zero_division=0)
-    return acc, f1, auc, cm, report
+    return acc, f1, auc, cm, report, clf
 
 def compare_in_validation(models, X_train, y_train, X_val, y_val, show_classification_report=True):
     val_rows = []
@@ -293,7 +295,7 @@ def retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_mode
     X_trfin = np.vstack([X_train, X_val])
     y_trfin = np.hstack([y_train, y_val])
 
-    test_acc, test_f1, test_auc, test_cm, test_rep = compute_metrics(
+    test_acc, test_f1, test_auc, test_cm, test_rep, clf = compute_metrics(
         best_model, X_trfin, y_trfin, X_test, y_test, le.classes_
     )
 
@@ -304,3 +306,11 @@ def retrain_best_model(X_train, y_train, X_val, y_val, X_test, y_test, best_mode
     print(f"Test ROC-AUC:   {test_auc:.3f}" if not np.isnan(test_auc) else "Test ROC-AUC:   NA")
     print("\nConfusion matrix (TEST):\n", test_cm)
     print("\nClassification report (TEST):\n", test_rep)
+
+    return clf
+
+
+def save_model(model, folder_path, filename="final_model.joblib"):
+    file_path = os.path.join(folder_path, filename)
+    joblib.dump(model, file_path)
+    print(f"Model saved successfully in {file_path} as '{filename}'.")
