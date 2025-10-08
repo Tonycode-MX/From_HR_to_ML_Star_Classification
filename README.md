@@ -56,13 +56,14 @@ SVM_OVR	SVM	One-vs-Rest	Leverages SVM's precision in a multi-class scenario by t
 ## Repository Structure
 ```
 .
-├── data/         # Original data (.csv).
-├── environment/  # Conda environment configuration files.
-├── modules/      # Python modules and scripts. Main entry point: main.py
-├── notebooks/    # Jupyter notebooks for testing and experimentation.
-├── plots/        # Generated plots and visualizations.
-├── .gitignore    # Specifies files and folders to exclude from Git version control.
-└── README.md     # Project documentation and usage instructions.
+├── data/           # Original data (.csv).
+├── environment/    # Conda environment configuration files.
+├── modules/        # Python modules and scripts. Main entry point: main.py
+├── notebooks/      # Jupyter notebooks for testing and experimentation.
+├── plots/          # Generated plots and visualizations.
+├── .gitattributes  # Excludes \*.ipynb files from the repository's language statistics.
+├── .gitignore      # Specifies files and folders to exclude from Git version control.
+└── README.md       # Project documentation and usage instructions.
 
 ```
 
