@@ -125,7 +125,15 @@ def stage3():
     save_list_to_file(topK_rfe, data_folder, filename="topK_features_rfe.pkl")
     save_list_to_file(topK_rf, data_folder, filename="topK_features_rf.pkl")
 
+# STAGE 4: Model Comparison and Selection
 def stage4():
+    """
+    Main script for model comparison and selection.
+        1) Import selected features from previous stage.
+        2) Prepare data for modeling.
+        3) Compare models in validation.
+        4) Save best model name to pickle file in /data folder.
+    """
     # Get data path
     data_folder = data_path()
 
@@ -148,7 +156,16 @@ def stage4():
     # Save best model name to pickle file in /data folder
     save_list_to_file([best_model], data_folder, filename="best_model_name.pkl")
 
+# STAGE 5: Final Model Training and Evaluation
 def stage5():
+    """
+    Main script for final model training and evaluation.
+        1) Import selected features from previous stage.
+        2) Prepare data for modeling.
+        3) Import best model name from previous stage.
+        4) Retrain best model on train+val set.
+        5) Save final model to /data folder.
+    """
     # Get data path
     data_folder = data_path()
 
