@@ -263,4 +263,4 @@ stages = [5] will only run Stage 5.
 
 #### Acknowledgements
 I would like to express my special thanks to:
-   - Alondra Plascencia (Universidad de Guadalajara, @Alondra-Plascencia), for her unwavering support during this academic exchange. Her continuous encouragement and assistance were fundamental in allowing us to successfully complete projects like this one, significantly contributing to our professional growth.
+   - Alondra Plascencia (Universidad de Guadalajara, [@Alondra-Plascencia](https://github.com/Alondra-Plascencia)), for her unwavering support during this academic exchange. Her continuous encouragement and assistance were fundamental in allowing us to successfully complete projects like this one, significantly contributing to our professional growth.
