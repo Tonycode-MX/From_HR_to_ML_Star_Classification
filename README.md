@@ -1,4 +1,4 @@
-# From HR to ML: Star Classification
+# Star Classification: From HR to ML
 
 This project was developed for Partial 1 of the Deep Learning course as part of my academic exchange at the Universidad Católica de Colombia (Bogotá, Colombia). It aims to automate the classification of stellar populations — Main Sequence, Giants, and White Dwarfs — using data from Gaia DR3.
 
