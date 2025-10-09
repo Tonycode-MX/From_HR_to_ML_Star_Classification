@@ -49,10 +49,6 @@ The OVR approach decomposes the multi-class task into multiple binary classifica
 +--------------+-----------------+---------------+-----------------------------------------------------+
 ```
 
-KNN_OVR	KNN	One-vs-Rest	Applies KNN in a binary fashion for each class, potentially improving class separation.
-RF_OVR	Random Forest	One-vs-Rest	Uses RF's robustness within the OVR framework.
-SVM_OVR	SVM	One-vs-Rest	Leverages SVM's precision in a multi-class scenario by training an independent classifier for each stellar population.
-
 ## Repository Structure
 ```
 .
@@ -126,7 +122,7 @@ This stage focuses on feature selection and model training. It prepares the data
 
 **Output:** The following essential files are saved to the `/data` folder:
 
-   - Six CSV files containing the split datasets: `X_train.csv`, `X_val.csv`, `X_test.csv` (Features) and `y_train.csv`}, `y_val.csv`, `y_test.csv` (Target).
+   - Six CSV files containing the split datasets: `X_train.csv`, `X_val.csv`, `X_test.csv` (Features) and `y_train.csv`, `y_val.csv`, `y_test.csv` (Target).
    - Two PKL files storing the list of selected feature names for column filtering in subsequent stages: `topK_features_rfe.pkl` and `topK_features_rf.pkl`.
 
 ### Stage 4: Model Comparison and Selection (Validation)
